@@ -6,20 +6,22 @@ window.addEventListener("load", function () {
             .include("Sprites, Scenes, Input, 2D, Touch, UI") // Load any needed modules
             .setup({ maximize: true })         // Add a canvas element onto the page, maximize to browser size
             .controls()                        // Add in default controls (keyboard, buttons)
-            .touch();                          // Add in touch support (for the UI)
-
+            .touch(),                          // Add in touch support (for the UI)
+        level = 1,
+        lastLevel = 2;
+    Q.state.reset({ score : 0, lives : 3 });
+    
     // You can create a sub-class by extending the Q.Sprite class to create Q.Player
     Q.Sprite.extend("Player", {
 
-      // the init constructor is called on creation
+        // the init constructor is called on creation
         init: function (p) {
 
             // You can call the parent's constructor with this._super(..)
             this._super(p, {
                 sheet: "player",  // Setting a sprite sheet sets sprite width and height
                 x: 410,           // You can also set additional properties that can
-                y: 90,            // Be overridden on object creation
-                level: "level1"   // Sets current stage level
+                y: 90             // Be overridden on object creation
             });
 
             // Add in pre-made components to get up and running quickly
@@ -30,8 +32,8 @@ window.addEventListener("load", function () {
             this.on("hit.sprite", function (collision) {
                 // Check the collision, if it's the Tower, you win!
                 if (collision.obj.isA("Tower")) {
-                    if (this.level === "level1") {
-                        this.level = "level2";
+                    if (level < lastLevel) {
+                        level += 1;
                         Q.stageScene("nextLevel", 1, { label: "Next Level" });
                     } else {
                         // Stage the endGame scene above the current stage
@@ -50,7 +52,7 @@ window.addEventListener("load", function () {
             this._super(p, { sheet: 'tower' });
         }
     });
-
+    
     // Create the Enemy class to add in some baddies
     Q.Sprite.extend("Enemy", {
         init: function (p) {
@@ -64,16 +66,24 @@ window.addEventListener("load", function () {
             // end the game unless the enemy is hit on top
             this.on("bump.left,bump.right,bump.bottom", function (collision) {
                 if (collision.obj.isA("Player")) {
-                    Q.stageScene("endGame", 1, { label: "You Died" });
                     collision.obj.destroy();
+                    Q.state.dec("lives", 1);
+                    if (Q.state.p.lives === 0) {
+                        Q.stageScene("endGame", 1, { label: "You Died" });
+                    } else {
+                        Q.clearStages();
+                        Q.stageScene('level' + level);
+                        Q.stageScene("gameStats", 1);
+                    }
                 }
             });
 
             // If the enemy gets hit on the top, destroy it
-            // and give the user a "hop"
+            // add to the score and give the user a "hop"
             this.on("bump.top", function (collision) {
                 if (collision.obj.isA("Player")) {
                     this.destroy();
+                    Q.state.inc("score", 50);
                     collision.obj.p.vy = -300;
                 }
             });
@@ -135,10 +145,13 @@ window.addEventListener("load", function () {
         // and restart the game.
         button.on("click", function () {
             Q.clearStages();
-            Q.stageScene('level1');
+            Q.state.reset({ score: 0, lives: 3 });
+            level = 1;
+            Q.stageScene('level' + level);
+            Q.stageScene('gameStats', 1);
         });
 
-        // Expand the container to visibily fit it's contents
+        // Expand the container to visibily fit its contents
         container.fit(20);
     });
     
@@ -150,13 +163,56 @@ window.addEventListener("load", function () {
         // and restart the game.
         button.on("click", function () {
             Q.clearStages();
-            Q.stageScene('level2');
+            Q.stageScene('level' + level);
         });
 
-        // Expand the container to visibily fit it's contents
+        // Expand the container to visibily fit its contents
         container.fit(20);
     });
+    
 
+    Q.scene('gameStats', function (stage) {
+        Q.UI.Text.extend("Lives", {
+            init: function (p) {
+                this._super({
+                    label: "Lives: " + Q.state.p.lives,
+                    x: -1 * Q.width / 6,
+                    y: 0
+                });
+                Q.state.on("change.lives", this, "lives");
+            },
+            lives: function (lives) {
+                this.p.label = "Lives: " + lives;
+            }
+        });
+        Q.UI.Text.extend("Score", {
+            init: function (p) {
+                this._super({
+                    label: "score: " + Q.state.p.score,
+                    x: Q.width / 6,
+                    y: 0
+                });
+                Q.state.on("change.score", this, "score");
+            },
+            score: function (score) {
+                this.p.label = "score: " + score;
+            }
+        });
+        
+        var statsContainer = stage.insert(new Q.UI.Container({
+            fill: "gray",
+            x: Q.width / 2,
+            y: Q.height - 30,
+            border: 1,
+            shadow: 3,
+            shadowColor: "rgba(0,0,0,0.5)",
+            w: 960,
+            h: 40
+        })),
+            lives = stage.insert(new Q.Lives(), statsContainer),
+            score = stage.insert(new Q.Score(), statsContainer);
+    });
+    
     // Q.load can be called at any time to load additional assets
     // assets that are already loaded will be skipped
     Q.load("sprites.png, sprites.json, level1.json, level2.json, tiles.png",
@@ -168,7 +224,11 @@ window.addEventListener("load", function () {
             // Or from a .json asset that defines sprite locations
             Q.compileSheets("sprites.png", "sprites.json");
 
-            // Finally, call stageScene to run the game
+            // all stageScene to run the game
             Q.stageScene("level1");
+        
+            // Add the stats box
+            Q.stageScene("gameStats", 1);
+        
         });
 });
