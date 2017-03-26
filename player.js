@@ -32,6 +32,12 @@ function createPlayerSprite(Q) {
                     this.destroy();
                 }
             });
+        },
+        // Check for fall death
+        step: function(dt) {
+            if (this.p.y > 800) {
+                window.playerDeath(Q);
+            }
         }
     });
 }
