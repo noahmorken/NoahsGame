@@ -9,6 +9,7 @@ function createNextLevelScene(Q) {
         button.on("click", function () {
             Q.clearStages();
             Q.stageScene('level' + Q.state.p.level);
+            Q.stageScene('gameStats', 1);
         });
 
         // Expand the container to visibily fit its contents

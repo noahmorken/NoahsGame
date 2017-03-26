@@ -5,7 +5,7 @@ function createEnemy1Sprite(Q) {
             this._super(p, { sheet: 'enemy', vx: 100 });
 
             // Enemies use the Bounce AI to change direction 
-            // whenver they run into something.
+            // whenever they run into something.
             this.add('2d, aiBounce');
 
             // Listen for a sprite collision, if it's the player,

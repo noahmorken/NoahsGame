@@ -21,7 +21,7 @@ function createPlayerSprite(Q) {
             this.on("hit.sprite", function (collision) {
                 // Check the collision, if it's the Tower, you win!
                 if (collision.obj.isA("Tower")) {
-                    if (Q.state.p.level < lastLevel) {
+                    if (Q.state.p.level < Q.state.p.lastLevel) {
                         Q.state.inc("level", 1);
                         Q.stageScene("nextLevel", 1, { label: "Next Level" });
                     } else {

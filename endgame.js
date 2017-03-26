@@ -11,7 +11,7 @@ function createEndGameScene(Q) {
         // and restart the game.
         button.on("click", function () {
             Q.clearStages();
-            Q.state.reset({ score: 0, lives: 3, level: 1});
+            Q.state.reset({ score: 0, lives: 3, level: 1, lastLeve: 3});
             Q.stageScene('level' + Q.state.p.level);
             Q.stageScene('gameStats', 1);
         });
