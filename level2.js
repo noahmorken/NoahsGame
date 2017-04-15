@@ -1,5 +1,5 @@
 function createLevel2Scene(Q) {
-'use strict';
+    'use strict';
     // Create a new scene called level 2
     Q.scene("level2", function (stage) {
 

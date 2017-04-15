@@ -8,7 +8,7 @@ window.addEventListener("load", function () {
             .controls()                        // Add in default controls (keyboard, buttons)
             .touch(),                          // Add in touch support (for the UI)
         i;
-    Q.state.reset({ score : 0, lives : 3, level : 3, lastLevel : 3 });
+    Q.state.reset({ score : 0, lives : 3, level : 1, lastLevel : 3 });
     
     window.createPlayerSprite(Q);
     window.createTowerSprite(Q);
